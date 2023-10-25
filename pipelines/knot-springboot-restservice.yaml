@@ -1,0 +1,134 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: knot-springboot-restservice-pipeline
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: repoName
+    type: string
+    description: Name of the repo
+    default: ""
+  - name: imageTag
+    type: string
+    description: Name of the repo
+    default: ""
+  - name: repo-url
+    type: string
+    description: The git repo URL to clone from.  
+  - name: sonarqube-scan
+    type: string
+    description: Triggers the sonarqube scan task.
+  - name: SONAR_HOST_URL
+    description: SonarQube server URL
+    type: string
+  - name: SONAR_PROJECT_KEY
+    description: Project's unique key
+    type: string
+  - name: SOURCE_TO_SCAN
+    description: "Comma-separated paths to directories containing main source files"
+    type: string
+  - name: SONAR_ORGANIZATION
+    description: "Comma-separated paths to directories containing main source files"
+    type: string
+  - name: IMAGE
+    type: string
+  - name: project-type
+    type: string
+    description: Triggers the compile task.                  
+  workspaces:
+  - name: pipeline-data-pvc
+    description: | 
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+  - name: git-basic-auth-secret
+    description: Secret that contains thegit credentials
+  - name: sonar-token-auth-secret
+    description: Secret that contains the sonarqube credentials
+  - name: sonar-settings
+    description: Cm that contains the sonarqube config
+    optional: true    
+  - name: my-secret-para-docker
+    description: Secret that contains the sonarqube credentials
+  - name: maven-settings
+    description: required but not needed   
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone-original
+    retries: 10  
+    workspaces:
+    - name: output
+      workspace: pipeline-data-pvc
+    - name: basic-auth
+      workspace: git-basic-auth-secret
+    params:
+    - name: url
+      value: $(params.repo-url)
+  - name: compile
+    runAfter: ["fetch-source"]
+    retries: 10
+    taskRef:
+      name: maven-tekton
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: maven-settings
+      workspace: maven-settings      
+    params:
+    - name: GOALS
+      value: 
+        - "package"     
+  - name: sonarqube-scan
+    runAfter: ["compile"]
+    retries: 10
+    taskRef:
+      name: sonarqube-perform-scan
+    when:
+      - input: "$(params.sonarqube-scan)"
+        operator: in
+        values: ["True"]  
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: sonar-credentials
+      workspace: sonar-token-auth-secret
+    - name: sonar-settings
+      workspace: sonar-settings
+    params:
+    - name: SONAR_HOST_URL
+      value: $(params.SONAR_HOST_URL)  
+    - name: SONAR_PROJECT_KEY
+      value: $(params.SONAR_PROJECT_KEY)  
+    - name: SOURCE_TO_SCAN
+      value: $(params.SOURCE_TO_SCAN)  
+    - name: SONAR_ORGANIZATION
+      value: $(params.SONAR_ORGANIZATION)  
+  - name: build-push
+    runAfter: ["sonarqube-scan"]
+    retries: 10
+    taskRef:
+      name: kaniko
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: dockerconfig
+      workspace: my-secret-para-docker
+    params:
+    - name: IMAGE
+      value: "$(params.IMAGE):$(tasks.fetch-source.results.commit)"
+    - name: BUILDER_IMAGE
+      value: "gcr.io/kaniko-project/executor:v1.6.0-debug"
+  - name: update-version
+    params:
+    - name: repoName
+      value: $(params.repoName)
+    - name: imageTag
+      value: $(tasks.fetch-source.results.commit)
+    runAfter: ["build-push"]
+    retries: 10
+    taskRef:
+     kind: Task
+     name: update-version      
+
+---

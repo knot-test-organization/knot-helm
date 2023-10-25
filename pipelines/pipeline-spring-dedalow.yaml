@@ -1,0 +1,90 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-with-dedalowspring-gitflow-develop
+  namespace: tekton-pipelines
+spec:
+  params:
+  - default: ""
+    description: Name of the repo
+    name: repoName
+    type: string
+  - default: ""
+    description: Name of the org
+    name: orgName
+    type: string
+  - default: ""
+    description: Name of the repo
+    name: imageTag
+    type: string
+  - description: The git repo URL to clone from.
+    name: repo-url
+    type: string
+  - name: IMAGE
+    type: string
+  - description: Triggers the compile task.
+    name: project-type
+    type: string
+  tasks:
+  - name: fetch-source
+    params:
+    - name: url
+      value: $(params.repo-url)
+    retries: 10
+    taskRef:
+      kind: Task
+      name: git-clone-original
+    workspaces:
+    - name: output
+      workspace: pipeline-data-pvc
+    - name: basic-auth
+      workspace: git-basic-auth-secret
+  - name: compile
+    params:
+    - name: GOALS
+      value:
+      - package
+    - name: REPO_NAME
+      value: $(params.repoName)
+    - name: ORG_NAME
+      value: $(params.orgName)
+    retries: 10
+    runAfter:
+    - fetch-source
+    taskRef:
+      kind: Task
+      name: maven-tekton-dedalow
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: maven-settings
+      workspace: maven-settings
+  - name: build-push
+    params:
+    - name: IMAGE
+      value: $(params.IMAGE):$(tasks.fetch-source.results.commit)
+    - name: BUILDER_IMAGE
+      value: gcr.io/kaniko-project/executor:v1.6.0-debug
+    retries: 10
+    runAfter:
+    - compile
+    taskRef:
+      kind: Task
+      name: kaniko-multi-image
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: dockerconfig
+      workspace: my-secret-para-docker
+  workspaces:
+  - description: |
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+    name: pipeline-data-pvc
+  - description: Secret that contains thegit credentials
+    name: git-basic-auth-secret
+    optional: true
+  - description: Secret that contains the sonarqube credentials
+    name: my-secret-para-docker
+  - description: required but not needed
+    name: maven-settings

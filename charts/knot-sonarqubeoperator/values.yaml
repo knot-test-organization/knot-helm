@@ -1,0 +1,17 @@
+sonarqubeoperator:
+  name: sonarqubeoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: knot-sonarqubeoperator
+    tag: 7
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT

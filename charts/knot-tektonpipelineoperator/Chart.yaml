@@ -1,0 +1,12 @@
+apiVersion: v2
+name: knot-tektonpipelineoperator
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+# dependencies:
+# - name: example1
+#   version: "1.2.3"
+#   repository: "https://example.com/charts"
+# - name: example2
+#   version: "3.2.1"
+#   repository: "https://another.example.com/charts"

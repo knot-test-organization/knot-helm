@@ -1,0 +1,16 @@
+{{- range $repository := .Values.repositories }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-repository-{{ $repository.name }}
+  namespace: {{ $repository.namespace }}
+  annotations:
+    "helm.sh/hook-weight": "-5"
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  url: {{ $repository.url }}
+  project: {{ $repository.project }}
+  type: {{ $repository.type }}
+---
+{{- end }}

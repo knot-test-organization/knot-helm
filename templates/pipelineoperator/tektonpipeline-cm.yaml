@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.pipelineoperator.name }}-cm
+  namespace: {{ .Release.Namespace }}
+data:
+  tekton-pipeline.yml.j2: |
+    apiVersion: tekton.dev/v1beta1
+    kind: Pipeline
+    metadata:
+    name: << pipeline_name >>
+    spec:
+    workspaces:
+        - name: shared-workspace
+
+    params:
+    - name: release
+        type: string
+        description: Version snapshot => false; Version release => true;
+        default: "false"
+    - name: deployment-name
+        type: string
+        description: (NO TOCAR) nombre del microservicio
+        default: << pipeline_name >>
+    - name: git-url
+        type: string
+        description: (NO TOCAR) url del repositorio
+        default: << git_repo_url >>
+    - name: git-helm-chart
+        type: string
+        description: (NO TOCAR) url del repositorio del commons chart
+        default: << git_helm_repo_url >>
+    tasks:
+        {%if credentials_task == git-harbor-sonar %}
+        // generic git credentials
+        - name: get-secrets
+        taskRef: 
+            name: get-secrets-git-harbor-sonar   
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+        {% endif %}
+        // generic
+        - name: fetch-repository
+        taskRef:
+            name: git-clone
+        runAfter:
+            - get-secrets
+        params:
+            - name: url
+            value: $(params.git-url)/$(params.deployment-name).git
+            - name: release
+            value: $(params.release)
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+    // java dependent
+        {% project_type == java %}
+        - name: maven-deploy
+        taskRef:
+            name: maven
+        runAfter:
+            - fetch-repository
+        params:
+            - name: release
+            value: $(params.release)          
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+        {% endif %}
+    // sonar dependent
+        {% code_analysis == sonar %}
+        - name: sonar
+        taskRef:
+            name: maven-upload-sonar
+        runAfter:
+            - maven-deploy
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+    // sonar dependent
+        - name: sonar-notification
+        taskRef:
+            name: sonar-notification
+        runAfter:
+            - sonar
+        params:
+            - name: deployment-name
+            value: $(params.deployment-name)
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+        {% endif %}
+        {% automatic_versioning == enabled && project_type == type %}
+    // automatic versioning and java project        
+        - name: update-project-version
+        taskRef:
+            name: update-version-mvn
+        runAfter: 
+            - maven-deploy
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+        {% endif %}
+        {% project_type == java %}
+    // java project
+        - name: create-build-config
+        taskRef:
+            name: build-config-maven
+        runAfter:
+            - update-project-version
+        params:
+            - name: deployment-name
+            value: $(params.deployment-name)
+            - name: image-stream
+            value: openjdk-11-rhel7:1.11-1
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+        {% endif %}
+        // generic with helm 
+        - name: update-version-helm-prueba
+        taskRef:
+            name: update-version-helm-prueba
+        runAfter:
+            - create-build-config
+        workspaces:
+        - name: output
+            workspace: shared-workspace
+        params:
+            - name: git-url
+            value: $(params.git-url)
+            - name: git-helm-chart
+            value: $(params.git-helm-chart)
+            - name: deployment-name
+            value: $(params.deployment-name)
+            - name: release
+            value: $(params.release)
+        {% endif %}
+        // harbor dependent          
+        {% docker_registry == harbor %}
+        - name: harbor-tag
+        taskRef:
+            name: harbor-tag
+        runAfter:
+            - update-version-helm-prueba
+        params:
+            - name: repository
+            value: $(params.deployment-name)
+            - name: release
+            value: $(params.release)
+        workspaces:
+            - name: output
+            workspace: shared-workspace
+        {% endif %} 

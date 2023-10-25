@@ -1,0 +1,36 @@
+# {{- range $repository := .Values.argoConfig.commons.repositories }}
+# apiVersion: tekton.dev/v1beta1
+# kind: PipelineRun
+# metadata:
+#   generateName: create-argocd-project-run-{{ $repository.name }}
+#   namespace: tekton-pipelines
+#   name: {{ $repository.name }}
+#   annotations:
+#     "helm.sh/hook-weight": "5"
+# spec:
+#   serviceAccountName: default
+#   params:
+#   - name: repository-name
+#     value: {{ $repository.name }}
+#   - name: repository-url
+#     value: {{ $repository.url }}
+#   - name: username
+#     value: {{ $repository.username }}
+#   - name: password
+#     value: {{ $repository.password }}
+#   - name: repository-project
+#     value: {{ $repository.project }}
+#   pipelineSpec:
+#     tasks:
+#     - name: create-argocd-repository-task
+#       taskSpec:
+#         steps:
+#         - name: argocd-project-creation
+#           image: ghcr.io/everis-technology/argocdcli:v1.0
+#           script: |                                    
+#             #!/bin/sh
+#             export adminPassword=$(kubectl get secret -n {{ $.Release.Namespace }} argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 --decode)
+#             argocd login argocd-server.{{ $.Release.Namespace }}.svc.cluster.local:8080 --username admin --password $adminPassword --insecure --port-forward --port-forward-namespace {{ $.Release.Namespace }}
+#             argocd repo add "$(params.repository-url)" --name "$(params.repository-name)" --username "$(params.username)" --password "$(params.password)" --project "$(params.repository-project)"
+# ---
+# {{- end }}

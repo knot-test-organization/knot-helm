@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: knot-azfunc-gitflow-release
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: repo-url
+    type: string
+    description: The git repo URL to clone from.
+  - name: function-name
+    type: string
+    description: The name of the function to deploy.
+  - name: project-type
+    type: string
+    description: The language of the function to deploy. [azfuncjs, azfuncts, azfuncpy, azfuncdotnet, azfuncjava]
+     
+  workspaces:
+  - name: pipeline-data-pvc
+    description: |
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+  - name: git-basic-auth-secret
+    description: Secret that contains git credentials
+
+  # Tasks are the smallest building block of a pipeline.
+  tasks:
+
+  # Clones the repo into a Workspace.
+  - name: fetch-source
+    taskRef:
+      name: git-clone-original
+    retries: 10
+    workspaces:
+    - name: output
+      workspace: pipeline-data-pvc
+    - name: basic-auth
+      workspace: git-basic-auth-secret
+    params:
+    - name: url
+      value: $(params.repo-url)
+
+ # Deploy the function to Azure.
+  - name: publish-azure-function
+    taskRef:
+      name: publish-azure-function
+    runAfter:
+      - fetch-source
+    workspaces:
+      - name: source
+        workspace: pipeline-data-pvc
+      - name: basic-auth
+        workspace: git-basic-auth-secret
+    params:
+      - name: functionName
+        value: $(params.function-name)
+      - name : funcLanguage
+        value: $(params.project-type)
+      - name: environment
+        value: dev

@@ -1,0 +1,27 @@
+knot_code_api:
+  name: knot-code-api
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: knot-code-api
+    tag: 10
+  envFromSecret:
+    - name: AZURE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_CLIENT_ID
+    - name: AZURE_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SECRET
+    - name: AZURE_SUBSCRIPTION_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SUBSCRIPTION_ID
+    - name: AZURE_TENANT_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_TENANT

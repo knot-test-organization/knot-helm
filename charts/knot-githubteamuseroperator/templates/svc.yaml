@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: {{ .Values.githubteamuseroperator.name }}
+  name: {{ .Values.githubteamuseroperator.name }}-svc
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  selector:
+    control-plane: {{ .Values.githubteamuseroperator.name }}

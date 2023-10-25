@@ -1,0 +1,18 @@
+{{- range $appProject := .Values.argoConfig.commons.projects }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $appProject.name }}
+  namespace: {{ $.Release.Namespace }}
+  annotations:
+    "helm.sh/hook-weight": "5"
+spec:
+  description: group devops
+  destinations:
+    - name: in-cluster
+      namespace: cicd
+      server: 'https://kubernetes.default.svc'
+  sourceRepos:
+    - {{ $appProject.url }}
+---
+{{- end }}

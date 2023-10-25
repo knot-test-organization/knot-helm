@@ -1,0 +1,135 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: knot-java-restclient-gitflow-master
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: repoName
+    type: string
+    description: Name of the repo
+    default: ""
+  - name: productOrganization
+    type: string
+    description: Name of the product organization
+    default: ""  
+  - name: productArea
+    type: string
+    description: Name of the product Area
+    default: ""  
+  - name: productID
+    type: string
+    description: ID of the product 
+    default: ""    
+  - name: gitrevision
+    description: The git revision
+    default: ""  
+  - name: tag
+    description: The image new tag   
+    type: string    
+  - name: IMAGE
+    type: string 
+  - name: pipeline-run-name
+    type: string
+    description: Generated name by the pipeline run.
+  - name: pipeline-name
+    type: string
+    description: Name of the pipeline.         
+  workspaces:
+  - name: pipeline-data-pvc
+    description: | 
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+  - name: git-basic-auth-secret
+    description: Secret that contains the git credentials
+  - name: sonar-token-auth-secret
+    description: Secret that contains the sonarqube credentials
+  - name: sonar-settings
+    description: Cm that contains the sonarqube config
+    optional: true    
+  - name: my-secret-para-docker
+    description: Secret that contains the sonarqube credentials
+  - name: maven-settings
+    description: required but not needed   
+  tasks:
+  - name: save-state-pipeline
+    retries: 1
+    taskRef:
+      name: save-state-task-dapr
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    params:
+    - name: STATE_KEY
+      value: $(params.repoName)|$(params.pipeline-name)|$(params.pipeline-run-name)|core-info
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+  - name: pull-retag-push
+    runAfter: ["save-state-pipeline"]
+    params:
+    - name: IMAGE
+      value: $(params.IMAGE)
+    - name: tag
+      value: $(params.tag)
+    - name: task-name
+      value: $(context.task.name)
+    - name: repoName
+      value: $(params.repoName)
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+    retries: 10
+    taskRef:
+      name: pull-retag-push
+    workspaces:
+    - name: dockerconfig
+      workspace: my-secret-para-docker  
+  - name: update-version
+    params:
+    - name: repoName
+      value: $(params.repoName)
+    - name: imageTag
+      value: $(tasks.pull-retag-push.results.imageTag)
+    - name: productOrganization
+      value: $(params.productOrganization)
+    - name: productArea
+      value: $(params.productArea)
+    - name: productID
+      value: $(params.productID)  
+    - name: environment
+      value: "production"
+    - name: namespace
+      value: "pro"
+    - name: task-name
+      value: $(context.task.name)
+    - name: repoName
+      value: $(params.repoName)
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+    runAfter: ["pull-retag-push"]
+    retries: 10
+    taskRef:
+     kind: Task
+     name: update-version      
+  finally:
+    - name: update-execution-status
+      taskRef:
+        name: check-state-task-dapr
+      workspaces:
+        - name: source
+          workspace: pipeline-data-pvc
+      params:
+        - name: aggregateTasksStatus
+          value: "$(tasks.status)"
+        - name: STATE_KEY
+          value: $(params.repoName)|$(params.pipeline-name)|$(params.pipeline-run-name)|core-info
+        - name: PIPELINE_NAME
+          value: $(params.pipeline-name)
+        - name: EXECUTION_NAME
+          value: $(params.pipeline-run-name)
+---

@@ -1,0 +1,37 @@
+knot_dedalow_experience_api:
+  name: knot-dedalow-experience-api
+  image:
+    registry: ghcr.io/nttdata-hybridcloud
+    name:  knot-dedalow-experience-api
+    tag: 16
+  envFromSecret:
+    - name: AZURE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_CLIENT_ID
+    - name: AZURE_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SECRET
+    - name: AZURE_SUBSCRIPTION_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SUBSCRIPTION_ID
+    - name: AZURE_TENANT_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_TENANT
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: GITHUB_PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT

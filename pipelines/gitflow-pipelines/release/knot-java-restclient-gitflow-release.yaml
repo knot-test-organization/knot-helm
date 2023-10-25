@@ -1,0 +1,220 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: knot-java-restclient-gitflow-release
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: repoName
+    type: string
+    description: Name of the repo
+    default: ""
+  - name: productOrganization
+    type: string
+    description: Name of the product organization
+    default: ""  
+  - name: productArea
+    type: string
+    description: Name of the product Area
+    default: ""  
+  - name: productID
+    type: string
+    description: ID of the product 
+    default: ""    
+  - name: imageTag
+    type: string
+    description: image tag 
+    default: ""
+    description: Namespace of deployment  
+  - name: gitrevision
+    description: The git revision
+    default: ""  
+  - name: tag
+    description: The image new tag   
+    type: string    
+  - name: repo-url
+    type: string
+    description: The git repo URL to clone from.  
+  - name: sonarqube-scan
+    type: string
+    description: Triggers the sonarqube scan task.
+  - name: SONAR_HOST_URL
+    description: SonarQube server URL
+    type: string
+  - name: SONAR_PROJECT_KEY
+    description: Project's unique key
+    type: string
+  - name: SOURCE_TO_SCAN
+    description: "Comma-separated paths to directories containing main source files"
+    type: string
+  - name: SONAR_ORGANIZATION
+    description: "Comma-separated paths to directories containing main source files"
+    type: string
+  - name: IMAGE
+    type: string
+  - name: project-type
+    type: string
+    description: Triggers the compile task.
+  - name: pipeline-run-name
+    type: string
+    description: Generated name by the pipeline run.
+  - name: pipeline-name
+    type: string
+    description: Name of the pipeline.                 
+  workspaces:
+  - name: pipeline-data-pvc
+    description: | 
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+  - name: git-basic-auth-secret
+    description: Secret that contains the git credentials
+  - name: sonar-token-auth-secret
+    description: Secret that contains the sonarqube credentials
+  - name: sonar-settings
+    description: Cm that contains the sonarqube config
+    optional: true    
+  - name: my-secret-para-docker
+    description: Secret that contains the sonarqube credentials
+  - name: maven-settings
+    description: required but not needed   
+  tasks:
+  - name: save-state-pipeline
+    retries: 1
+    taskRef:
+      name: save-state-task-dapr
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    params:
+    - name: STATE_KEY
+      value: $(params.repoName)|$(params.pipeline-name)|$(params.pipeline-run-name)|core-info
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+  - name: fetch-source
+    runAfter: ["save-state-pipeline"]
+    taskRef:
+      name:  git-clone-return-tag
+    retries: 10  
+    workspaces:
+    - name: output
+      workspace: pipeline-data-pvc
+    - name: basic-auth
+      workspace: git-basic-auth-secret
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.gitrevision) 
+    - name: tag
+      value: $(params.tag)
+    - name: task-name
+      value: $(context.task.name)
+    - name: repoName
+      value: $(params.repoName)
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+  - name: compile
+    runAfter: ["fetch-source"]
+    retries: 10
+    taskRef:
+      name: maven-tekton
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: maven-settings
+      workspace: maven-settings      
+    params:
+    - name: GOALS
+      value: 
+        - "package"
+    - name: task-name
+      value: $(context.task.name)
+    - name: repoName
+      value: $(params.repoName)
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)       
+  - name: sonarqube-scan
+    runAfter: ["compile"]
+    retries: 10
+    taskRef:
+      name: sonarqube-perform-scan
+    when:
+      - input: "$(params.sonarqube-scan)"
+        operator: in
+        values: ["True"]  
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: sonar-credentials
+      workspace: sonar-token-auth-secret
+    - name: sonar-settings
+      workspace: sonar-settings
+    params:
+    - name: SONAR_HOST_URL
+      value: $(params.SONAR_HOST_URL)  
+    - name: SONAR_PROJECT_KEY
+      value: $(params.SONAR_PROJECT_KEY)  
+    - name: SOURCE_TO_SCAN
+      value: $(params.SOURCE_TO_SCAN)  
+    - name: SONAR_ORGANIZATION
+      value: $(params.SONAR_ORGANIZATION)
+    - name: task-name
+      value: $(context.task.name)
+    - name: repoName
+      value: $(params.repoName)
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+  - name: update-version-pull-request
+    params:
+    - name: repoName
+      value: $(params.repoName)
+    - name: imageTag
+      value: $(tasks.fetch-source.results.tag)
+    - name: productOrganization
+      value: $(params.productOrganization)
+    - name: productArea
+      value: $(params.productArea)
+    - name: productID
+      value: $(params.productID)  
+    - name: environment
+      value: "stage"
+    - name: namespace
+      value: "pre"
+    - name: task-name
+      value: $(context.task.name)
+    - name: repoName
+      value: $(params.repoName)
+    - name: PIPELINE_NAME
+      value: $(params.pipeline-name)
+    - name: EXECUTION_NAME
+      value: $(params.pipeline-run-name)
+    runAfter: ["sonarqube-scan"]
+    retries: 10
+    taskRef:
+     kind: Task
+     name: update-version-pull-request      
+  finally:
+    - name: update-execution-status
+      taskRef:
+        name: check-state-task-dapr
+      workspaces:
+        - name: source
+          workspace: pipeline-data-pvc
+      params:
+        - name: aggregateTasksStatus
+          value: "$(tasks.status)"
+        - name: STATE_KEY
+          value: $(params.repoName)|$(params.pipeline-name)|$(params.pipeline-run-name)|core-info
+        - name: PIPELINE_NAME
+          value: $(params.pipeline-name)
+        - name: EXECUTION_NAME
+          value: $(params.pipeline-run-name)
+---

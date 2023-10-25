@@ -1,0 +1,6 @@
+frontend_server:
+  name: frontend-server
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: knot-front-server
+    tag: 25

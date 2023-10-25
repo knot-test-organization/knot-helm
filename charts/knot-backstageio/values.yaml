@@ -1,0 +1,691 @@
+# Default values for the Backstage chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Global parameters
+# Global Docker image parameters
+# Please, note that this will override the image parameters, including dependencies, configured to use the global value
+# Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
+# @default -- See below
+global:
+  # -- Global Docker image registry
+  imageRegistry: ""
+
+  # -- Global Docker registry secret names as an array
+  # </br> E.g. `imagePullSecrets: [myRegistryKeySecretName]`
+  imagePullSecrets: []
+
+# -- Common parameters
+
+# -- Override Kubernetes version
+kubeVersion: ""
+
+# -- String to partially override common.names.fullname
+nameOverride: ""
+
+# -- String to fully override common.names.fullname
+fullnameOverride: ""
+
+# -- Default Kubernetes cluster domain
+clusterDomain: cluster.local
+
+# -- Labels to add to all deployed objects
+commonLabels: {}
+
+# -- Annotations to add to all deployed objects
+commonAnnotations: {}
+
+# -- Array of extra objects to deploy with the release
+extraDeploy: []
+
+# -- Enable diagnostic mode in the Deployment
+diagnosticMode:
+
+  # -- Enable diagnostic mode (all probes will be disabled and the command will be overridden)
+  enabled: false
+
+  # -- Command to override all containers in the Deployment
+  command:
+    - sleep
+
+  # -- Args to override all containers in the Deployment
+  args:
+    - infinity
+
+# -- Ingress parameters
+ingress:
+
+  # -- Enable the creation of the ingress resource
+  enabled: false
+
+  # -- Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx)
+  className: ""
+
+  # -- Additional annotations for the Ingress resource
+  annotations: {}
+
+  # -- Hostname to be used to expose the route to access the backstage application (e.g: backstage.IP.nip.io)
+  host: ""
+
+  # -- Ingress TLS parameters
+  tls:
+
+    # -- Enable TLS configuration for the host defined at `ingress.host` parameter
+    enabled: false
+
+    # -- The name to which the TLS Secret will be called
+    secretName: ""
+
+# -- Backstage parameters
+# @default -- See below
+backstage:
+  # -- Number of deployment replicas
+  replicas: 1
+
+  image:
+
+    # -- Backstage image registry
+    registry: ghcr.io
+
+    # -- Backstage image repository
+    repository: knot-test-organization/knot-backstageio
+
+    # -- Backstage image tag (immutable tags are recommended)
+    tag: '35'
+
+    # -- Specify a imagePullPolicy.
+    # Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    # <br /> Ref: https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+    pullPolicy: Always
+
+    # -- Optionally specify an array of imagePullSecrets.
+    #  Secrets must be manually created in the namespace.
+    # <br /> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    # <br /> E.g: `pullSecrets: [myRegistryKeySecretName]`
+    pullSecrets: []
+
+    # -- Set to true if you would like to see extra information on logs
+    debug: false
+
+  # -- Container ports on the Deployment
+  containerPorts:
+    backend: 7007
+
+  # -- Backstage container command
+  command: ["node", "packages/backend"]
+
+  # -- Backstage container command arguments
+  args: []
+
+  # -- Extra app configuration files to inline into command arguments
+  extraAppConfig: []
+
+  # -- Deployment sidecars
+  extraContainers: []
+
+  # -- Backstage container environment variables
+  extraEnvVars: []
+
+  # -- Backstage container environment variables from Secrets
+  extraEnvVarsSecrets: []
+
+  # -- Backstage container additional volume mounts
+  extraVolumeMounts: []
+
+  # -- Backstage container additional volumes
+  extraVolumes: []
+
+  # -- Backstage container init containers
+  initContainers: []
+
+  # -- Directory containing the backstage installation
+  installDir: /app
+
+  # -- Resource requests/limits
+  # <br /> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
+  # <!-- E.g.
+  # resources:
+  #   limits:
+  #     memory: 1Gi
+  #     cpu: 1000m
+  #   requests:
+  #     memory: 250Mi
+  #     cpu: 100m -->
+  resources: {}
+
+  # -- Readiness Probe
+  # Backstage doesn't provide any health endpoints by default. A simple one can be added like this: https://backstage.io/docs/plugins/observability/#health-checks
+  # <br /> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes
+  # <!-- E.g.
+  # readinessProbe:
+  #   failureThreshold: 3
+  #   httpGet:
+  #     path: /healthcheck
+  #     port: 7007
+  #     scheme: HTTP
+  #   initialDelaySeconds: 30
+  #   periodSeconds: 10
+  #   successThreshold: 2
+  #   timeoutSeconds: 2
+  readinessProbe: {}
+
+  # -- Liveness Probe
+  # Backstage doesn't provide any health endpoints by default. A simple one can be added like this: https://backstage.io/docs/plugins/observability/#health-checks
+  # <br /> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes
+  # <!-- E.g.
+  # livenessProbe:
+  #   failureThreshold: 3
+  #   httpGet:
+  #     path: /healthcheck
+  #     port: 7007
+  #     scheme: HTTP
+  #   initialDelaySeconds: 60
+  #   periodSeconds: 10
+  #   successThreshold: 1
+  #   timeoutSeconds: 2
+  livenessProbe: {}
+
+  # -- Security settings for a Pod.
+  #  The security settings that you specify for a Pod apply to all Containers in the Pod.
+  # <br /> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+
+  # -- Security settings for a Container.
+  # <br /> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
+
+  # Allows to define the appConfig as a multiline string that generates a ConfigMap
+  # automatically, not requiring to have it pre provisioned as with the extraAppConfig key.
+  # DO NOT USE if you need to put sensitive data in the appConfig.
+  # E.g:
+  # appConfig:
+  #   app:
+  #     baseUrl: https://somedomain.tld
+  # -- Generates ConfigMap and configures it in the Backstage pods
+  appConfig:
+    app:
+      title: NTT Data Backstage App
+      baseUrl: http://knot-backstage.westeurope.cloudapp.azure.com:7007
+    
+    organization:
+      name: NTT Data
+    
+    backend:
+      # Used for enabling authentication, secret is shared by all backend plugins
+      # See https://backstage.io/docs/auth/service-to-service-auth for
+      # information on the format
+      # auth:
+      #   keys:
+      #     - secret: ${BACKEND_SECRET}
+      baseUrl: http://knot-backstage.westeurope.cloudapp.azure.com:7007
+      listen:
+        port: 7007
+        # Uncomment the following host directive to bind to specific interfaces
+        # host: 127.0.0.1
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
+        upgrade-insecure-requests: false
+        # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
+        # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+      cors:
+        origin: http://knot-backstage.westeurope.cloudapp.azure.com:7007
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      # This is for local development only, it is not recommended to use this in production
+      # The production database configuration is stored in app-config.production.yaml
+#      database:
+#        client: better-sqlite3
+#        connection: ':memory:'
+      database:
+        client: pg
+        connection:
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+#      cache:
+#        store: memory
+      # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+    
+    integrations:
+      github:
+        - host: github.com
+          # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+          # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
+          # token: ${GITHUB_TOKEN}
+          # everis-technology
+          token: github_target_token
+          # eduprado
+          # token: github_target_token
+        ### Example for how to add your GitHub Enterprise instance using the API:
+        # - host: ghe.example.net
+        #   apiBaseUrl: https://ghe.example.net/api/v3
+        #   token: ${GHE_TOKEN}
+    
+    proxy:
+      endpoints:
+        ### Example for how to add a proxy endpoint for the frontend.
+        ### A typical reason to do this is to handle HTTPS and CORS for internal services.
+        # '/test':
+        #   target: 'https://example.com'
+        #   changeOrigin: true
+        '/argocd/api':
+          target: https://knot-argocd.westeurope.cloudapp.azure.com/api/v1/
+          changeOrigin: true
+          # only if your argocd api has self-signed cert
+          secure: false
+          headers:
+            Cookie:
+              $env: 'argocd.token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjpsb2dpbiIsImV4cCI6MTY4ODI1MDA2MywibmJmIjoxNjg4MTYzNjYzLCJpYXQiOjE2ODgxNjM2NjMsImp0aSI6ImUxOTNlMTI3LTEyNTAtNGUyZC1hYjRlLTBiYjM5YmYyYWQ4MCJ9.oaB7HRxS3Xqixc1_M35QPLmfAMPP9yeb8Xw3LVnkC8o'
+        '/jenkins/api':
+          target: http://localhost:8080
+          headers:
+            Authorization: ${JENKINS_BASIC_AUTH_HEADER}
+        '/knot':
+          target: http://knot.westeurope.cloudapp.azure.com/api/
+          changeOrigin: true
+          secure: false    
+    argocd:
+      username: admin
+      password: xaDEP35TEQtu7t6z
+      appLocatorMethods:
+        - type: 'config'
+          instances:
+            - name: knot-argocd
+              url: https://knot-argocd.westeurope.cloudapp.azure.com
+    sonarqube:
+      baseUrl: http://knot-sonar.westeurope.cloudapp.azure.com:9000
+      apiKey: squ_1d47bf3c64f5f0f627d331a2e6d2c02c8f7019ed
+    techdocs:
+      builder: 'local' # Alternatives - 'external'
+      generator:
+        runIn: 'docker' # Alternatives - 'local'
+      publisher:
+        type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+    
+    auth:
+      # see https://backstage.io/docs/auth/ to learn about auth providers
+      environment: development
+      providers:
+        github:
+          development:
+            # everis-technology
+            clientId: 4f8e1561208b266cc85d
+            clientSecret: fa41368f04f350cf158de9a23c3e5a5434adac87
+    
+    scaffolder:
+      # see https://backstage.io/docs/features/software-templates/configuration for software template options
+    
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, API, System, Domain, Resource, Location, User, Group]
+      providers:
+        microcksApiEntity:
+          dev:
+            baseUrl: https://microcks.acme.com
+            serviceAccount: microcks-serviceaccount
+            serviceAccountCredentials: ab54d329-e435-41ae-a900-ec6b3fe15c54
+            systemLabel: domain
+            ownerLabel: team 
+            schedule: # optional; same options as in TaskScheduleDefinition
+              # supports cron, ISO duration, "human duration" as used in code
+              frequency: { minutes: 2 }
+              # supports ISO duration, "human duration" as used in code
+              timeout: { minutes: 1 }
+      locations:
+        # # Local example data, file locations are relative to the backend process, typically `packages/backend`
+        # - type: file
+        #   target: ../../examples/entities.yaml
+    
+        - type: url
+          target: https://github.com/knot-test-organization/knot-backstageio/blob/develop/scaffolder-templates/create-java-app-hpa-ci/template.yaml
+          rules:
+            - allow: [Template]
+    
+        - type: url
+          target: https://github.com/knot-test-organization/knot-backstageio/blob/develop/scaffolder-templates/create-netcore-app-hpa-ci/template.yaml
+          rules:
+            - allow: [Template]
+    
+        - type: url
+          target: https://github.com/knot-test-organization/knot-backstageio/blob/develop/scaffolder-templates/create-java-app-hpa-postgresqldb-ci/template.yaml
+          rules:
+            - allow: [Template]
+    
+        - type: url
+          target: https://github.com/knot-test-organization/knot-backstageio/blob/develop/scaffolder-templates/create-netcore-app-hpa-postgresqldb-ci/template.yaml
+          rules:
+            - allow: [Template]
+    
+        - type: url
+          target: https://github.com/knot-test-organization/knot-backstageio/blob/develop/scaffolder-templates/pull-request/template.yaml
+          rules:
+            - allow: [Template]
+    
+        # # Local example organizational data
+        # - type: file
+        #   target: ../../examples/org.yaml
+        #   rules:
+        #     - allow: [User, Group]
+    
+        # # Uncomment these lines to add more example data
+        # - type: url
+        #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+    
+        # # Uncomment these lines to add an example org
+        # - type: url
+        #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
+        #   rules:
+        #     - allow: [User, Group]
+    
+    openai:
+      apiKey: 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
+    
+    # kubernetes:
+    #   serviceLocatorMethod:
+    #     type: 'multiTenant'
+    #   clusterLocatorMethods:
+    #     - type: 'config'
+    #       clusters:
+    #         - url: http://127.0.0.1:9999
+    #           name: minikube
+    #           authProvider: 'serviceAccount'
+    #           skipTLSVerify: false
+    #           skipMetricsLookup: true
+    #           serviceAccountToken: ${K8S_MINIKUBE_TOKEN}
+    #           dashboardUrl: http://127.0.0.1:64713 # url copied from running the command: minikube service kubernetes-dashboard -n kubernetes-dashboard
+    #           dashboardApp: standard
+    #           caData: ${K8S_CONFIG_CA_DATA}
+    #           caFile: '' # local path to CA file
+    #           customResources:
+    #             - group: 'argoproj.io'
+    #               apiVersion: 'v1alpha1'
+    #               plural: 'rollouts'
+    #         - url: http://127.0.0.2:9999
+    #           name: aws-cluster-1
+    #           authProvider: 'aws'
+    #     - type: 'gke'
+    #       projectId: 'gke-clusters'
+    #       region: 'europe-west1'
+    #       skipTLSVerify: true
+    #       skipMetricsLookup: true
+    #       exposeDashboard: true
+    
+    costInsights:
+      engineerCost: 200000
+      engineerThreshold: 0.5
+      products:
+        computeEngine:
+          name: Compute Engine
+          icon: compute
+        cloudDataflow:
+          name: Cloud Dataflow
+          icon: data
+        cloudStorage:
+          name: Cloud Storage
+          icon: storage
+        bigQuery:
+          name: BigQuery
+          icon: search
+        events:
+          name: Events
+          icon: data
+      metrics:
+        DAU:
+          name: Daily Active Users
+          default: true
+        MSC:
+          name: Monthly Subscribers
+      currencies:
+        engineers:
+          label: 'Engineers 🛠'
+          unit: 'engineer'
+        usd:
+          label: 'US Dollars 💵'
+          kind: 'USD'
+          unit: 'dollar'
+          prefix: '$'
+          rate: 1
+        carbonOffsetTons:
+          label: 'Carbon Offset Tons ♻️⚖️s'
+          kind: 'CARBON_OFFSET_TONS'
+          unit: 'carbon offset ton'
+          rate: 3.5
+        beers:
+          label: 'Beers 🍺'
+          kind: 'BEERS'
+          unit: 'beer'
+          rate: 4.5
+        pintsIceCream:
+          label: 'Pints of Ice Cream 🍦'
+          kind: 'PINTS_OF_ICE_CREAM'
+          unit: 'ice cream pint'
+          rate: 5.5
+    
+    jenkins:
+      instances:
+        - name: default
+          baseUrl: https://jenkins.example.com
+          username: backstage-bot
+          apiKey: 123456789abcdef0123456789abcedf012
+
+    tekton:
+      - name: celz-cluster # unique identifier, cannot contain spaces  
+        baseUrl: https://celz-aks-1fcd32a9.hcp.westeurope.azmk8s.io
+        authorizationBearerToken: eyJhbGciOiJSUzI1NiIsImtpZCI6IjZhUDgwbGRjUURWY0huNncxT2JuYmF1eThGRUdiZm5hMDVDeGhDdXpsR2sifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tOWJ6a2IiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImU2YjAwY2U1LWM3MTgtNDM0Zi1hZjUyLWUxZjBiM2EwNmIxYSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.JEVtn2CZBSM2vOcxmomsaoJlZXOHk3D-y5oD2AILAETYqCe-trjujtiTTJg871JOoH8UdjlBg3Gb1aK67XzV5g_mXq1-e3X_OR1UbEjOxcbfM06Pitar249Ukh71pqxwe0KIqzdwClvW8JutaFR_f-BkpXmJisrxTx9F7Iz-J6-npvVanYlpQwQUJ05k82BQSaU2PVfAvPCG531spFKRULPrXoJZ-kd7qPl3MFHbLAOz-ghgnUMGSRnKAPbN-jzuzO4woxl1wjk_vJdLmTO7KTs7TqjqiuYsLdnx_pXU0sISdfSjX79jkItBn-H-Vty2NulHRBtdviM9s6eXOQHkFy-kuJPFpQoZ76Pexlufzgq34RWSluhLsooPcN5ob9xxl2VmIhEQiXLt_mCPaCFD1Jd8HhpCFejdLBc1lZv-fmIyLXiC3aMvIztSg78bYyiejk7mwkWtFe9Ayo-hLulEaQUV-rNa7rNrjxyGDftML4l0jWTNSdbY3xJYDTvFx5KhzkfmgGtaDFW-xHYs7kSjqc4VLluZqW-bmX1_mD82S2JZo8IAyCHobpjOO1RVvG4eVD1K0-r94dKU0XpE4anf7xABsmY1wgj2z8Prmir9upGOl7URKKXDqUnMbxsxzDnB2EI1LgEkLP7RVUOJPMogpFGkxYdETIE-8nseAacPAow # (remove this line, if you dont have auth enabled)
+        dashboardBaseUrl: http://knot.westeurope.cloudapp.azure.com/tekton/
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: https://celz-aks-1fcd32a9.hcp.westeurope.azmk8s.io:443
+              name: celz
+              authProvider: 'serviceAccount'
+              skipTLSVerify: true
+              skipMetricsLookup: true
+              serviceAccountToken: eyJhbGciOiJSUzI1NiIsImtpZCI6IjZhUDgwbGRjUURWY0huNncxT2JuYmF1eThGRUdiZm5hMDVDeGhDdXpsR2sifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tOWJ6a2IiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImU2YjAwY2U1LWM3MTgtNDM0Zi1hZjUyLWUxZjBiM2EwNmIxYSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.JEVtn2CZBSM2vOcxmomsaoJlZXOHk3D-y5oD2AILAETYqCe-trjujtiTTJg871JOoH8UdjlBg3Gb1aK67XzV5g_mXq1-e3X_OR1UbEjOxcbfM06Pitar249Ukh71pqxwe0KIqzdwClvW8JutaFR_f-BkpXmJisrxTx9F7Iz-J6-npvVanYlpQwQUJ05k82BQSaU2PVfAvPCG531spFKRULPrXoJZ-kd7qPl3MFHbLAOz-ghgnUMGSRnKAPbN-jzuzO4woxl1wjk_vJdLmTO7KTs7TqjqiuYsLdnx_pXU0sISdfSjX79jkItBn-H-Vty2NulHRBtdviM9s6eXOQHkFy-kuJPFpQoZ76Pexlufzgq34RWSluhLsooPcN5ob9xxl2VmIhEQiXLt_mCPaCFD1Jd8HhpCFejdLBc1lZv-fmIyLXiC3aMvIztSg78bYyiejk7mwkWtFe9Ayo-hLulEaQUV-rNa7rNrjxyGDftML4l0jWTNSdbY3xJYDTvFx5KhzkfmgGtaDFW-xHYs7kSjqc4VLluZqW-bmX1_mD82S2JZo8IAyCHobpjOO1RVvG4eVD1K0-r94dKU0XpE4anf7xABsmY1wgj2z8Prmir9upGOl7URKKXDqUnMbxsxzDnB2EI1LgEkLP7RVUOJPMogpFGkxYdETIE-8nseAacPAow
+              customResources:
+                - group: 'networking.istio.io'
+                  apiVersion: 'v1alpha3'
+                  plural: 'virtualservices'
+
+      # # Service Account, ClusterRole and ClusterRoleBinding used in kubernetes plugin
+      # apiVersion: rbac.authorization.k8s.io/v1
+      # kind: ClusterRoleBinding
+      # metadata:
+      #   name: default-cluster-admin
+      # roleRef:
+      #   apiGroup: rbac.authorization.k8s.io
+      #   kind: ClusterRole
+      #   name: cluster-admin
+      # subjects:
+      # - kind: ServiceAccount
+      #   name: default
+      #   namespace: default
+
+  # -- Node labels for pod assignment
+  # <br /> Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+  # -- Node tolerations for server scheduling to nodes with taints
+  # <br /> Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  tolerations: []
+  #  - key: "key"
+  #    operator: "Equal|Exists"
+  #    value: "value"
+  #    effect: "NoSchedule|PreferNoSchedule|NoExecute"
+
+  # -- Annotations to add to the backend deployment pods
+  podAnnotations: {}
+
+  # -- Additional custom annotations for the `Deployment` resource
+  annotations: {}
+
+## @section Traffic Exposure parameters
+
+## Service parameters
+##
+# -- Service parameters
+# @default -- See below
+service:
+
+  # -- Kubernetes Service type
+  type: LoadBalancer
+
+  # -- Backstage svc port for client connections
+  ports:
+    backend: 7007
+
+    # -- Backstage svc port name
+    name: http-backend
+
+    # -- Backstage svc target port referencing receiving pod container port
+    targetPort: backend
+
+  # -- Node port for the Backstage client connections
+  # Choose port between `30000-32767`
+  nodePorts:
+    backend: ""
+
+  # -- Control where client requests go, to the same pod or round-robin
+  # (values: `ClientIP` or `None`)
+  # <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/service/#session-stickiness
+  sessionAffinity: None
+
+  # -- Backstage service Cluster IP
+  #
+  # <br /> E.g `clusterIP: None`
+  clusterIP: ""
+
+  # -- Backstage service Load Balancer IP
+  #
+  # <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
+  loadBalancerIP: ""
+
+  # -- Load Balancer sources
+  #
+  # <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
+  # <br /> E.g `loadBalancerSourceRanges: [10.10.10.0/24]`
+  loadBalancerSourceRanges: []
+
+  # -- Backstage service external traffic policy
+  #
+  # Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  externalTrafficPolicy: Cluster
+
+  # -- Additional custom annotations for Backstage service
+  annotations: {}
+
+  # -- Extra ports to expose in the Backstage service (normally used with the `sidecar` value)
+  extraPorts:
+  - name: https-backend
+    port: 443
+    targetPort: backend
+
+# -- Network policies
+# <br /> Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+networkPolicy:
+
+  # -- networkPolicy.enabled Specifies whether a NetworkPolicy should be created
+  enabled: false
+
+  externalAccess:
+    from: []
+
+  # -- Custom network policy rule
+  egressRules:
+
+    # -- Additional custom egress rules
+    # e.g:
+    # customRules:
+    #   - to:
+    #       - namespaceSelector:
+    #           matchLabels:
+    #             label: example
+    customRules: []
+
+
+# -- PostgreSQL [chart configuration](https://github.com/bitnami/charts/blob/master/bitnami/postgresql/values.yaml)
+# @default -- See below
+postgresql:
+
+  # -- Switch to enable or disable the PostgreSQL helm chart
+  enabled: true
+
+  # -- The authentication details of the Postgres database
+  auth:
+
+    # -- Name for a custom user to create
+    username: bn_backstage
+
+    # -- Password for the custom user to create
+    password: "bn_backstage"
+
+    database: "bn_backstage"
+    
+    # -- Name of existing secret to use for PostgreSQL credentials
+    existingSecret: ""
+
+    # -- The secret keys Postgres will look for to retrieve the relevant password
+    secretKeys:
+
+      # -- The key in which Postgres will look for, for the admin password, in the existing Secret
+      adminPasswordKey: admin-password
+
+      # -- The key in which Postgres will look for, for the user password, in the existing Secret
+      userPasswordKey: user-password
+
+      # -- The key in which Postgres will look for, for the replication password, in the existing Secret
+      replicationPasswordKey: replication-password
+
+  # -- PostgreSQL architecture (`standalone` or `replication`)
+  architecture: standalone
+
+# -- Service Account Configuration
+# @default -- See below
+serviceAccount:
+
+  # -- Enable the creation of a ServiceAccount for Backstage pods
+  create: false
+
+  # -- Name of the ServiceAccount to use
+  # If not set and `serviceAccount.create` is true, a name is generated
+  name: ""
+
+  # -- Additional custom labels to the service ServiceAccount.
+  labels: {}
+
+  # -- Additional custom annotations for the ServiceAccount.
+  annotations: {}
+
+  # -- Auto-mount the service account token in the pod
+  automountServiceAccountToken: true
+
+# -- Metrics configuration
+metrics:
+
+  # -- ServiceMonitor configuration
+  # <br /> Allows configuring your backstage instance as a scrape target for [Prometheus](https://github.com/prometheus/prometheus) using a ServiceMonitor custom resource that [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator) can understand.
+  serviceMonitor:
+
+    # -- If enabled, a ServiceMonitor resource for Prometheus Operator is created
+    # <br /> Prometheus Operator must be installed in your cluster prior to enabling.
+    enabled: false
+
+    # -- ServiceMonitor annotations
+    annotations: {}
+
+    # -- Additional ServiceMonitor labels
+    labels: {}
+
+    # -- ServiceMonitor scrape interval
+    interval: null
+
+    # -- ServiceMonitor endpoint path
+    # <br /> Note that the /metrics endpoint is NOT present in a freshly scaffolded Backstage app. To setup, follow the [Prometheus metrics tutorial](https://github.com/backstage/backstage/blob/master/contrib/docs/tutorials/prometheus-metrics.md).
+    path: /metrics

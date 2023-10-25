@@ -1,0 +1,55 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-with-promotion
+spec:
+  params:
+    - name: sourceImage
+      description: The source image to pull from the Container Registry
+      type: string
+    - name: targetImage
+      description: The target image to be pushed back to the Container Registry
+      type: string
+    - name: registry
+      description: The Container Registry hostname
+      type: string
+    - name: productOrganization
+      type: string
+      description: Name of the product organization
+      default: ""  
+    - name: productArea
+      type: string
+      description: Name of the product Area
+      default: ""  
+    - name: productID
+      type: string
+      description: ID of the product 
+      default: ""      
+  workspaces:
+    - name: dockerconfig
+      description: Workspace for storing Docker configuration files   
+  tasks:
+    - name: promotion-task
+      taskRef:
+        name: promotion-task
+      params:
+        - name: sourceImage
+          value: $(params.sourceImage)
+        - name: targetImage
+          value: $(params.targetImage)
+        - name: registry
+          value: $(params.registry)
+        - name: productOrganization
+          value: $(params.productOrganization)
+        - name: productArea
+          value: $(params.productArea)
+        - name: productID
+          value: $(params.productID)   
+      workspaces:
+        - name: dockerconfig
+          workspace: dockerconfig
+                
+        # - name: username
+        #   value: $(params.username)
+        # - name: password
+        #   value: $(params.password)

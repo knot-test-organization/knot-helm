@@ -1,0 +1,17 @@
+repositoryoperator:
+  name: repositoryoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: knot-repositoryoperator
+    tag: 137
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT

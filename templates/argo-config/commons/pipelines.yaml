@@ -1,0 +1,22 @@
+{{ $application := .Values.argoConfig.commons.tektonPipelines }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $application.appName }}
+  namespace: {{ $.Release.Namespace }}
+  annotations:
+    "helm.sh/hook-weight": "5"
+spec:
+  project: {{ $application.projectName }}
+  source:
+    repoURL: {{ $application.repoUrl }}
+    path: {{ $application.repoPath }}
+    targetRevision: {{ $application.repoTargetRevision }}
+    directory:
+      recurse: true
+      jsonnet: {}
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: {{ $.Release.Namespace }}
+  syncPolicy:
+    automated: {}

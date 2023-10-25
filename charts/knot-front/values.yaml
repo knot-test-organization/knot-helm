@@ -1,0 +1,6 @@
+frontend:
+  name: frontend
+  image:
+    registry: ghcr.io/nttdata-hybridcloud
+    name: knot-front
+    tag: 345

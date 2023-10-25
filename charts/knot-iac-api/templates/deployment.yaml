@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.knot_iac_api.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.knot_iac_api.name }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{ .Values.knot_iac_api.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.knot_iac_api.name }}
+    spec:
+      containers:
+      - name: {{ .Values.knot_iac_api.name }}
+        image: {{ .Values.knot_iac_api.image.registry }}/{{ .Values.knot_iac_api.image.name }}:{{ .Values.knot_iac_api.image.tag }}
+        env:
+        {{- range $envFromSecret := .Values.knot_iac_api.envFromSecret }}
+        - name: {{ $envFromSecret.name }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $envFromSecret.valueFrom.secretKeyRef.name }}
+              key: {{ $envFromSecret.valueFrom.secretKeyRef.key }}
+        {{- end }}
+        ports:
+        - containerPort: 80
+      serviceAccount: {{ .Values.knot_iac_api.name }}-controller-manager
+      serviceAccountName: {{ .Values.knot_iac_api.name }}-controller-manager
+      imagePullSecrets:
+      - name: "github"

@@ -1,0 +1,99 @@
+---
+# The getting-started Pipeline will run through several tasks:
+# - source is pulled from git
+# - source is built into an image by img
+# - image output is pushed to ECR
+# - cloudevent emitted
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-with-dedalowjavamonolithic
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: repoName
+    type: string
+    description: Name of the repo
+    default: ""
+  - name: orgName
+    type: string
+    description: Name of the org
+    default: ""
+  - name: imageTag
+    type: string
+    description: Name of the repo
+    default: ""
+  - name: repo-url
+    type: string
+    description: The git repo URL to clone from.
+  - name: IMAGE
+    type: string
+  - name: project-type
+    type: string
+    description: Triggers the compile task.
+  workspaces:
+  - name: pipeline-data-pvc
+    description: | 
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+  - name: git-basic-auth-secret
+    description: Secret that contains thegit credentials
+    optional: true    
+  - name: my-secret-para-docker
+    description: Secret that contains the sonarqube credentials
+  - name: maven-settings
+    description: required but not needed   
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone-original
+    retries: 10  
+    workspaces:
+    - name: output
+      workspace: pipeline-data-pvc
+    - name: basic-auth
+      workspace: git-basic-auth-secret
+    params:
+    - name: url
+      value: $(params.repo-url)
+  - name: compile
+    runAfter: ["fetch-source"]
+    retries: 10
+    taskRef:
+      name: maven-tekton
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: maven-settings
+      workspace: maven-settings
+    params:
+    - name: GOALS
+      value: 
+        - "package"
+  - name: build-push
+    runAfter: ["compile"]
+    retries: 10
+    taskRef:
+      name: kaniko
+    workspaces:
+    - name: source
+      workspace: pipeline-data-pvc
+    - name: dockerconfig
+      workspace: my-secret-para-docker
+    params:
+    - name: IMAGE
+      value: "$(params.IMAGE):$(tasks.fetch-source.results.commit)"
+    - name: BUILDER_IMAGE
+      value: "gcr.io/kaniko-project/executor:v1.6.0-debug"
+  - name: update-version
+    params:
+    - name: repoName
+      value: $(params.repoName)
+    - name: imageTag
+      value: $(tasks.fetch-source.results.commit)
+    runAfter: ["build-push"]
+    retries: 10
+    taskRef:
+     kind: Task
+     name: update-version   
+---

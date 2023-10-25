@@ -1,0 +1,11 @@
+apiVersion: v1
+stringData:
+  AZURE_SUBSCRIPTION_ID: 674279d7-a291-456c-8dd3-03b20e100cd5
+  AZURE_CLIENT_ID: a54c0f1b-ab10-498c-9465-654a7cdbb3bc
+  AZURE_SECRET: pNB8Q~C8.YrbGnfZ7Lo8zLcGEFKO2nHUe4RZbbxy
+  AZURE_TENANT: d55edb3e-09c5-417c-b1ee-d6f248126461
+kind: Secret
+metadata:
+  name: azure-login
+  namespace: {{ .Release.Namespace }}
+type: Opaque

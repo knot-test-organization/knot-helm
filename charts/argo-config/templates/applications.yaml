@@ -1,0 +1,36 @@
+{{- range $application := .Values.applications }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $application.name }}
+  namespace: {{ $application.namespace }}
+  annotations:
+    "helm.sh/hook-weight": "5"
+spec:
+  project: {{ $application.project }}
+  source:
+    repoURL: {{ $application.source.repoURL }}
+    path: {{ $application.source.path }}
+    targetRevision: {{ $application.source.targetRevision }}
+    {{- if $application.source.helm.valueFiles }}
+    helm:
+      valueFiles:
+      {{- range $value := $application.source.helm.valueFiles }}
+        - {{ $value }}
+      {{- end }}
+    {{- end }}
+  destination:
+    server: {{ $application.destination.server }}
+    namespace: {{ $application.destination.namespace }}
+  syncPolicy:
+    automated:
+      prune: {{ $application.syncPolicy.automated.prune }}
+      selfHeal: {{ $application.syncPolicy.automated.selfHeal }}
+    {{- if $application.syncPolicy.syncOptions }}
+    syncOptions:
+    {{- range $syncOption := $application.syncPolicy.syncOptions }}
+        - {{ $syncOption }}
+    {{- end }}
+    {{- end }}
+---
+{{- end }}

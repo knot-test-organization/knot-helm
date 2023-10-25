@@ -1,0 +1,477 @@
+projects:
+  - name: tekton-tasks
+    namespace: gitops
+    description: group devops
+    destinations:
+      - name: in-cluster
+        namespace: tekton-pipelines
+        server: https://kubernetes.default.svc
+    sourceRepos:
+      - https://github.com/knot-test-organization/knot-tekton-tasks.git
+applications:
+  - name: knot-front
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-front"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-sonarqubeoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-sonarqubeoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-tektonpipelineoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-tektonpipelineoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-repositoryoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-repositoryoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-azurewebappoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-azurewebappoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-backstage
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-backstageio"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: false
+        selfHeal: false
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-githubteamoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-githubteamoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-githubteamuseroperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-githubteamuseroperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-githubrepositoryteamoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-githubrepositoryteamoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-front-server
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-front-server"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-github-codespaceoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-github-codespaceoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-microsoft-teamsoperator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-microsoft-teamsoperator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-microsoft-teamsuser-operator
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-microsoft-teamsuser-operator"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-experience-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-experience-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-alm-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-alm-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-deploy-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-deployment-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-code-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-code-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-iac-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-iac-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-collaboration-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-collaboration-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-administration-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-administration-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-dedalow-experience-api
+    namespace: gitops
+    project: default
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "charts/knot-dedalow-experience-api"
+      targetRevision: "HEAD"
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: gitops
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - RespectIgnoreDifferences=true
+  - name: knot-tekton-tasks
+    namespace: gitops
+    project: tekton-tasks
+    source:
+      repoURL: https://github.com/knot-test-organization/knot-helm.git
+      path: "."
+      targetRevision: "HEAD"
+      helm:
+        valueFiles: []
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: tekton-pipelines
+    syncPolicy:
+      automated:
+        prune: false
+        selfHeal: false
+      syncOptions: []
+repositories:
+  - name: knot-onboarding-resources
+    namespace: "gitops"
+    project: "default"
+    url: https://github.com/knot-test-organization/knot-onboarding-resources.git
+  - name: knot-helm
+    namespace: "gitops"
+    project: "default"
+    url: https://github.com/knot-test-organization/knot-helm.git
+  - name: knot-generic-templates
+    namespace: "gitops"
+    project: "default"
+    url: https://github.com/knot-test-organization/knot-generic-templates.git
+  - name: knot-tekton-tasks
+    namespace: "gitops"
+    project: "default"
+    url: https://github.com/knot-test-organization/knot-tekton-tasks.git
+  - name: knot-charts-dedalow-spring
+    namespace: "gitops"
+    project: "default"
+    url: "https://github.com/knot-test-organization/knot-charts-dedalow-spring.git"
+  - name: knot-charts-dedalow-templates-spring
+    namespace: "gitops"
+    project: "default"
+    url: "https://github.com/knot-test-organization/knot-charts-dedalow-templates-spring.git"
+  - name: knot-backstageio
+    namespace: "gitops"
+    project: "default"
+    url: https://github.com/knot-test-organization/knot-backstageio.git

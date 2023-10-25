@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "common.names.fullname" . }}-vs
+spec:
+  gateways:
+  - knot-gateway
+  hosts:
+  - knot.westeurope.cloudapp.azure.com
+  http:
+  - name: "backstage"
+    match:
+    - uri:
+        prefix: "/backstage/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: {{ include "common.names.fullname" . }}
+        port: 
+          number: 7007

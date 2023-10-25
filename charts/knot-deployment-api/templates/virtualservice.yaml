@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Values.knot_deployment_api.name }}-vs
+spec:
+  gateways:
+  - knot-gateway
+  hosts:
+  - knot.westeurope.cloudapp.azure.com
+  http:
+  - name: {{ .Values.knot_deployment_api.name }}
+    match:
+    - uri:
+        prefix: "/deploy-api/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: {{ .Values.knot_deployment_api.name }}

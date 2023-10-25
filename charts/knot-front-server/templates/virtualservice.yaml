@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: frontend-server-vs
+spec:
+  gateways:
+  - knot-gateway
+  hosts:
+  - knot.westeurope.cloudapp.azure.com
+  http:
+  - name: "frontend-server"
+    match:
+    - uri:
+        prefix: "/server/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: frontend-server

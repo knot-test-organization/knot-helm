@@ -1,0 +1,22 @@
+{{- range $project := $.Values.projects }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $project.name }}
+  namespace: {{ $project.namespace }}
+  annotations:
+    "helm.sh/hook-weight": "0"
+spec:
+  description: {{ $project.description }}
+  destinations:
+  {{- range $destination := $project.destinations }}
+    - name: {{ $destination.name }}
+      namespace: {{ $destination.namespace }}
+      server: {{ $destination.server }}
+  {{- end }}
+  sourceRepos:
+  {{- range $repoUrl := $project.sourceRepos }}
+    - {{ $repoUrl }}
+  {{- end }}
+---
+{{- end }}

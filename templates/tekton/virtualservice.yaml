@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata: 
+  name: tekton-vs
+  namespace: tekton-pipelines
+spec:
+  gateways:
+  - gitops/knot-gateway
+  hosts:
+  - knot.westeurope.cloudapp.azure.com
+  http:
+  - name: "tekton"
+    match:
+    - uri:
+        prefix: "/tekton/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: tekton-dashboard
+        port:
+          number: 9097

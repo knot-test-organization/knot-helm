@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-server
+  namespace: gitops
+  labels:
+    app: frontend-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-server
+  template:
+    metadata:
+      labels:
+        app: frontend-server
+    spec:
+      containers:
+      - name: frontend-server
+        image: {{ .Values.frontend_server.image.registry }}/{{ .Values.frontend_server.image.name }}:{{ .Values.frontend_server.image.tag }}
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: "github"

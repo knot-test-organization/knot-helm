@@ -1,0 +1,192 @@
+argoConfig:
+  commons:
+    projects:
+    - name: tekton-tasks
+      url: https://github.com/knot-test-organization/test.git
+    - name: generic-application
+      url: https://github.com/knot-test-organization/test.git
+    - name: generic-gitops-project
+      url: https://github.com/knot-test-organization/test.git
+    tektonPipelines:
+      appName: "tekton-tasks"
+      projectName: "tekton-tasks"
+      repoUrl: https://github.com/knot-test-organization/test.git
+      repoPath: "/tkn-tasks"
+      repoTargetRevision: "HEAD"
+    applications:
+    - appName: "generic-application"
+      projectName: "generic-application"
+      repoUrl: https://github.com/knot-test-organization/test.git
+      repoPath: "/innovations/containers/platform/custom-pipeline"
+      repoTargetRevision: "HEAD"
+    - appName: "generic-helm-charts"
+      projectName: "generic-helm-charts"
+      repoUrl: https://github.com/knot-test-organization/test.git
+      repoPath: "/helm-charts"
+      repoTargetRevision: "HEAD"
+    repositories:
+    # - password: "changeit"
+    #   project: ""
+    #   url: ""
+    #   username: "changeit"
+    #   name: knot-test-organization
+    - password: 
+      project: knot-test-organization
+      url: https://github.com/knot-test-organization/test.git
+      username: alextejero28
+      name: knot-test-organization
+
+
+
+pipelineoperator:
+  name: pipelineoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: pipelineoperator
+    tag: v1.0
+
+repositoryoperator:
+  name: repositoryoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: repositoryoperator
+    tag: v1.0
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+
+usersoperator:
+  name: usersoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: usersoperator
+    tag: v1.0
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+project:
+  enabled:
+    azure: true
+
+acrusersoperator:
+  name: acrusersoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: acrusersoperator
+    tag: v1.0
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+
+acrrepositoryoperator:
+  name: acrrepositoryoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: acrrepositoryoperator
+    tag: v1.0
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+    - name: AZURE_SUBSCRIPTION_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SUBSCRIPTION_ID
+    - name: AZURE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_CLIENT_ID
+    - name: AZURE_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SECRET
+    - name: AZURE_TENANT
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_TENANT
+
+tektonpipelineoperator:
+  name: tektonpipelineoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: tektonpipelineoperator
+    tag: v1.0
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+
+sonarqubeoperator:
+  name: sonarqubeoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: sonarqubeoperator
+    tag: v1.0
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+  
+  
+managementapi:
+  name: managementapi
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: managementapi
+    tag: 63
+
+frontend:
+  name: frontend
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: frontend
+    tag: 11

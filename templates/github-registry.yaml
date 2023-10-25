@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJnaGNyLmlvIjp7InVzZXJuYW1lIjoicG1vbGluYW0iLCJwYXNzd29yZCI6ImdocF83eHdFYzM1MzQyc2ljTmVheERTc1dhZldLQWxQZGwweFdMaGIiLCJhdXRoIjoiY0cxdmJHbHVZVzA2WjJod1h6ZDRkMFZqTXpVek5ESnphV05PWldGNFJGTnpWMkZtVjB0QmJGQmtiREI0VjB4b1lnPT0ifX19
+kind: Secret
+metadata:
+  name: github
+  namespace: {{ .Release.Namespace }}
+type: kubernetes.io/dockerconfigjson

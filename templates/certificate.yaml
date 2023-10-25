@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ingress-cert
+  namespace: gitops
+spec:
+  issuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: letsencrypt-prod
+  secretName: knot-cert
+  commonName: knot.westeurope.cloudapp.azure.com
+  dnsNames:
+  - knot.westeurope.cloudapp.azure.com

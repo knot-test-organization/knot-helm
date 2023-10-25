@@ -1,0 +1,20 @@
+usersoperator:
+  name: usersoperator
+  image:
+    registry: ghcr.io/ghcr.io/nttdata-hybridcloud
+    name: knot-usersoperator
+    tag: 6
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+project:
+  enabled:
+    azure: true

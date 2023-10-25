@@ -1,0 +1,39 @@
+acrrepositoryoperator:
+  name: acrrepositoryoperator
+  image:
+    registry: ghcr.io/knot-test-organization
+    name: knot-azurewebappoperator
+    tag: 19
+  envFromSecret:
+    - name: GITHUB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: username
+    - name: PAT
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: PAT
+    - name: AZURE_SUBSCRIPTION_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SUBSCRIPTION_ID
+    - name: AZURE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_CLIENT_ID
+    - name: AZURE_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_SECRET
+    - name: AZURE_TENANT
+      valueFrom:
+        secretKeyRef:
+          name: azure-login
+          key: AZURE_TENANT
+  githubUsername: alextejero28
+  githubPAT: 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

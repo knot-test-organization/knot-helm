@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata: 
+  name: argocd-vs
+spec:
+  gateways:
+  - knot-gateway
+  hosts:
+  - knot.westeurope.cloudapp.azure.com
+  http:
+  - name: "argocd"
+    match:
+    - uri:
+        prefix: "/argocd/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: argocd-server
